@@ -5,10 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -56,13 +58,22 @@ class FeedFragment : Fragment() {
                 startActivity(shareIntent)
             }
         })
+
         binding.list.adapter = adapter
-        viewModel.data.observe(viewLifecycleOwner, { state ->
+        viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
             binding.progress.isVisible = state.loading
             binding.errorGroup.isVisible = state.error
             binding.emptyText.isVisible = state.empty
-        })
+        }
+
+        viewModel.errorLike.observe(viewLifecycleOwner) {
+            Snackbar
+                .make(binding.list, R.string.error_loading, Snackbar.LENGTH_SHORT)
+                .setBackgroundTint(ContextCompat.getColor(this.requireContext(),R.color.colorDark))
+                .setTextColor(ContextCompat.getColor(this.requireContext(),R.color.colorLight))
+                .show()
+        }
 
         binding.retryButton.setOnClickListener {
             viewModel.loadPosts()
